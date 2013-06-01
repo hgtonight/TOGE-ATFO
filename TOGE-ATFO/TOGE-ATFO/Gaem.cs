@@ -20,6 +20,8 @@ namespace TOGE_ATFO
         SpriteBatch spriteBatch;
         Color bgColor;
         SpriteFont basicFont;
+        Vector2 grissini = new Vector2(30, 30);
+        Texture2D grisspic;
 
         public Gaem()
             : base()
@@ -52,7 +54,8 @@ namespace TOGE_ATFO
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             basicFont = Content.Load<SpriteFont>("Calibri");
-            
+            grisspic = Content.Load<Texture2D>("Grissini");
+
             // TODO: use this.Content to load your game content here
         }
 
@@ -91,6 +94,7 @@ namespace TOGE_ATFO
             GraphicsDevice.Clear(bgColor);
             spriteBatch.Begin();
             spriteBatch.DrawString(basicFont, "Hello World!", new Vector2(16, 16), Color.White);
+            spriteBatch.Draw(grisspic, grissini, Color.White);
             spriteBatch.End();
             // TODO: Add your drawing code here
 
