@@ -19,12 +19,17 @@ namespace TOGE_ATFO
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Color bgColor;
+        Vector2 grissiniPosition = new Vector2(0, 0);
+        Vector2 moPosition = new Vector2(30, 30);
+
+        Texture2D grissiniSpriteTexture;
+        Texture2D moSpriteTexture;
 
         public Gaem()
             : base()
         {
             graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
+            Content.RootDirectory = "Assets";
         }
 
         /// <summary>
@@ -50,6 +55,8 @@ namespace TOGE_ATFO
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            grissiniSpriteTexture = this.Content.Load<Texture2D>("Grissini");
+          //  moSpriteTexture = this.Content.Load<Texture2D>("Mo.xnb");
         }
 
         /// <summary>
@@ -85,6 +92,11 @@ namespace TOGE_ATFO
             GraphicsDevice.Clear(bgColor);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            spriteBatch.Draw(grissiniSpriteTexture, grissiniPosition, Color.Pink);
+            spriteBatch.Draw(moSpriteTexture, moPosition, Color.PaleGoldenrod);
+            spriteBatch.End();
+
 
             base.Draw(gameTime);
         }
