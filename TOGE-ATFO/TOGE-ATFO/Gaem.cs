@@ -20,7 +20,7 @@ namespace TOGE_ATFO
         SpriteBatch spriteBatch;
         Color bgColor;
         SpriteFont basicFont;
-        Vector2 grissini = new Vector2(30, 30);
+        Vector2 grissini = new Vector2(30, 60);
         Texture2D grisspic;
 
         public Gaem()
@@ -79,9 +79,11 @@ namespace TOGE_ATFO
                 Exit();
 
             // TODO: Add your update logic here
-            bgColor.R = (byte)Math.Sin(gameTime.TotalGameTime.Milliseconds);
-            bgColor.G = (byte)Math.Cos(gameTime.TotalGameTime.Milliseconds);
-            bgColor.B = (byte)Math.Sin(gameTime.TotalGameTime.Milliseconds + (Math.PI/2));
+            bgColor.R = (byte)(Math.Sin(gameTime.TotalGameTime.TotalSeconds) * 255);
+            bgColor.G = (byte)(Math.Cos(gameTime.TotalGameTime.TotalSeconds) * 255);
+            bgColor.B = (byte)(Math.Cos(gameTime.TotalGameTime.TotalSeconds + (Math.PI/2)) * 255);
+
+         
             base.Update(gameTime);
         }
 
@@ -93,8 +95,8 @@ namespace TOGE_ATFO
         {
             GraphicsDevice.Clear(bgColor);
             spriteBatch.Begin();
-            spriteBatch.DrawString(basicFont, "Hello World!", new Vector2(16, 16), Color.White);
             spriteBatch.Draw(grisspic, grissini, Color.Pink);
+            spriteBatch.DrawString(basicFont, "Welcome to my gaem!", new Vector2(16, 16), Color.White);
             spriteBatch.End();
             // TODO: Add your drawing code here
 
