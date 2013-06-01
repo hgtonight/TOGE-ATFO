@@ -94,7 +94,7 @@ namespace TOGE_ATFO
             GraphicsDevice.Clear(bgColor);
             spriteBatch.Begin();
             spriteBatch.DrawString(basicFont, "Hello World!", new Vector2(16, 16), Color.White);
-            spriteBatch.Draw(grisspic, grissini, Color.White);
+            spriteBatch.Draw(grisspic, grissini, Color.Pink);
             spriteBatch.End();
             // TODO: Add your drawing code here
 
