@@ -1,4 +1,4 @@
 TOGE-ATFO
 =========
 
-A playground for Monogame and collaboration, but gayer.
+A playground for Monogame and collaboration
