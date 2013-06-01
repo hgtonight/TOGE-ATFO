@@ -19,12 +19,13 @@ namespace TOGE_ATFO
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Color bgColor;
+        SpriteFont basicFont;
 
         public Gaem()
             : base()
         {
             graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
+            Content.RootDirectory = "..\\..\\..\\Content";
         }
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace TOGE_ATFO
         {
             // TODO: Add your initialization logic here
             bgColor = Color.Black;
+            
             base.Initialize();
         }
 
@@ -49,6 +51,8 @@ namespace TOGE_ATFO
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            basicFont = Content.Load<SpriteFont>("Calibri");
+            
             // TODO: use this.Content to load your game content here
         }
 
@@ -72,7 +76,9 @@ namespace TOGE_ATFO
                 Exit();
 
             // TODO: Add your update logic here
-            bgColor.R++;
+            bgColor.R = (byte)Math.Sin(gameTime.TotalGameTime.Milliseconds);
+            bgColor.G = (byte)Math.Cos(gameTime.TotalGameTime.Milliseconds);
+            bgColor.B = (byte)Math.Sin(gameTime.TotalGameTime.Milliseconds + (Math.PI/2));
             base.Update(gameTime);
         }
 
@@ -83,7 +89,9 @@ namespace TOGE_ATFO
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(bgColor);
-
+            spriteBatch.Begin();
+            spriteBatch.DrawString(basicFont, "Hello World!", new Vector2(16, 16), Color.White);
+            spriteBatch.End();
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
