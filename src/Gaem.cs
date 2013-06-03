@@ -18,75 +18,40 @@ namespace TOGE_ATFO
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        Color bgColor;
-        SpriteFont basicFont;
-        Vector2 grissini = new Vector2(30, 60);
-        Texture2D grisspic;
+        ScreenManager screenManager;
+        ScreenFactory screenFactory;
+        Color NullColor;
+        SplashScreen Splash;
+        Menu Menu;
+        Tertis Tetris;
+        int State;
 
         public Gaem()
             : base()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-        }
-
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
-        /// </summary>
-        protected override void Initialize()
-        {
-            // TODO: Add your initialization logic here
-            bgColor = Color.Black;
             
-            base.Initialize();
-        }
-
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        protected override void LoadContent()
-        {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            basicFont = Content.Load<SpriteFont>("Calibri");
-            grisspic = Content.Load<Texture2D>("Grissini");
-
-            // TODO: use this.Content to load your game content here
-        }
-
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// all content.
-        /// </summary>
-        protected override void UnloadContent()
-        {
-            // TODO: Unload any non ContentManager content here
-        }
-
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Update(GameTime gameTime)
-        {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            // TODO: Add your update logic here
-            bgColor.R = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds)) * 255);
-            bgColor.G = (byte)(Math.Max(0, Math.Cos(gameTime.TotalGameTime.TotalSeconds)) * 255);
-            bgColor.B = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds + Math.PI)) * 255);
-
-            grissini.X = (float)(120 + Math.Sin(gameTime.TotalGameTime.TotalSeconds) * 100);
-            grissini.Y = (float)(120 + Math.Cos(gameTime.TotalGameTime.TotalSeconds) * 100);
+            // lets me make a screen factory
+            screenFactory = new screenFactory();
+            Services.AddService(typeof(IScreenFactory), screenFactory);
             
-            base.Update(gameTime);
+            // lets me make drawable components
+            screenManager = new screenManager(this);
+            Components.Add(screenManager);
+
+            // Run the initial screen
+            AddScreens();
+        }
+
+
+        private void AddScreens()
+        {
+            // background screen for some cool effects
+            screenManager.AddScreen(new BackgroundScreen(), null);
+
+            // actual splash screen
+            screenManager.AddScreen(new SplashScreen(), null);
         }
 
         /// <summary>
@@ -95,13 +60,9 @@ namespace TOGE_ATFO
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(bgColor);
-            spriteBatch.Begin();
-            spriteBatch.Draw(grisspic, grissini, Color.Pink);
-            spriteBatch.DrawString(basicFont, "Welcome to my gaem!", new Vector2(16, 16), Color.White);
-            spriteBatch.End();
-            // TODO: Add your drawing code here
+            graphics.GraphicsDevice.Clear(Color.Black);
 
+            // The actual drawing will be done in the screen manager
             base.Draw(gameTime);
         }
     }
