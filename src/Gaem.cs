@@ -79,9 +79,9 @@ namespace TOGE_ATFO
                 Exit();
 
             // TODO: Add your update logic here
-            bgColor.R = (byte)(Math.Sin(gameTime.TotalGameTime.TotalSeconds) * 255);
-            bgColor.G = (byte)(Math.Cos(gameTime.TotalGameTime.TotalSeconds) * 255);
-            bgColor.B = (byte)(Math.Cos(gameTime.TotalGameTime.TotalSeconds + (Math.PI/2)) * 255);
+            bgColor.R = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds)) * 255);
+            bgColor.G = (byte)(Math.Max(0, Math.Cos(gameTime.TotalGameTime.TotalSeconds)) * 255);
+            bgColor.B = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds + Math.PI)) * 255);
 
             grissini.X = (float)(120 + Math.Sin(gameTime.TotalGameTime.TotalSeconds) * 100);
             grissini.Y = (float)(120 + Math.Cos(gameTime.TotalGameTime.TotalSeconds) * 100);
