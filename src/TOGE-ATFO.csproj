@@ -64,7 +64,12 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="Content\Grissini.xnb" />
+    <None Include="Content\Calibri.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Grissini.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
