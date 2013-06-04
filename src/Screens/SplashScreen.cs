@@ -11,10 +11,11 @@ namespace TOGE
     public class SplashScreen : GameStateManagement.GameScreen
     {
         ContentManager content;
-        Texture2D Logo;
+        AnimatableTexture2D DaKlutz, Logo;
+        AnimatableText Presents, The, OliveGarden, Experience;
+        SpriteFont OldeFont;
         Color bgColor;
-        Vector2 LogoPosition;
-
+        
         public SplashScreen()
         {
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
@@ -29,11 +30,37 @@ namespace TOGE
             if (content == null) {
                 content = new ContentManager(ScreenManager.Game.Services, "Content");
             }
-            Logo = content.Load<Texture2D>("Grissini");
-            bgColor = Color.Black;
-            LogoPosition.X = 0;
-            LogoPosition.Y = 0;
-
+            Logo = new AnimatableTexture2D(content.Load<Texture2D>("Logo"));
+            Logo.SetAlphaPoints(0, 255);
+            Logo.SetPositionPoints(new Vector2(300, 150), new Vector2(320, 150));
+            Logo.SetAnimationLength(96);
+            Logo.Start();
+            DaKlutz = new AnimatableTexture2D(content.Load<Texture2D>("daklutz"));
+            DaKlutz.SetAlphaPoints(0, 255);
+            DaKlutz.SetPositionPoints(new Vector2(120, 180), new Vector2(120, 170));
+            DaKlutz.SetScalePoints(0.99f, 1.0f);
+            DaKlutz.SetAnimationLength(48);
+            //DaKlutz.Start();
+            Presents = new AnimatableText("PRESENTS", ScreenManager.Font);
+            Presents.SetPositionPoints(new Vector2(-100, 400), new Vector2(300, 400));
+            Presents.SetScalePoints(2.0f, 2.0f);
+            Presents.SetAlphaPoints(64, 212);
+            Presents.SetAnimationLength(48);
+            //Presents.Start();
+            OldeFont = content.Load<SpriteFont>("YeOldeFont");
+            The = new AnimatableText("The", OldeFont);
+            The.SetPositionPoints(new Vector2(300, -25), new Vector2(300, 50));
+            The.SetAnimationLength(96);
+            The.Start();
+            OliveGarden = new AnimatableText("Olive Garden", OldeFont);
+            OliveGarden.SetPositionPoints(new Vector2(0, 150), new Vector2(280, 150));
+            OliveGarden.SetAnimationLength(96);
+            OliveGarden.Start();
+            Experience = new AnimatableText("Experience", OldeFont);
+            Experience.SetPositionPoints(new Vector2(600, 400), new Vector2(300, 400));
+            Experience.SetAnimationLength(96);
+            Experience.Start();
+            bgColor = Color.Gray;
         }
 
         /// <summary>
@@ -50,13 +77,12 @@ namespace TOGE
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
             base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
-            
-            bgColor.R = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds)) * 255);
-            bgColor.G = (byte)(Math.Max(0, Math.Cos(gameTime.TotalGameTime.TotalSeconds)) * 255);
-            bgColor.B = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds + Math.PI)) * 255);
-
-            LogoPosition.X = (float)(120 + Math.Sin(gameTime.TotalGameTime.TotalSeconds) * 100);
-            LogoPosition.Y = (float)(120 + Math.Cos(gameTime.TotalGameTime.TotalSeconds) * 100);
+            Logo.Update(gameTime);
+            DaKlutz.Update(gameTime);
+            Presents.Update(gameTime);
+            The.Update(gameTime);
+            OliveGarden.Update(gameTime);
+            Experience.Update(gameTime);
         }
 
         /// <summary>
@@ -66,10 +92,12 @@ namespace TOGE
         public override void Draw(GameTime gameTime)
         {
             ScreenManager.GraphicsDevice.Clear(bgColor);
-            ScreenManager.SpriteBatch.Begin();
-            ScreenManager.SpriteBatch.Draw(Logo, LogoPosition, Color.Pink);
-            ScreenManager.SpriteBatch.DrawString(ScreenManager.Font, "Welcome to my gaem!", new Vector2(16, 16), Color.White);
-            ScreenManager.SpriteBatch.End();
+            Logo.Draw(ScreenManager.SpriteBatch, gameTime);
+            DaKlutz.Draw(ScreenManager.SpriteBatch, gameTime);
+            Presents.Draw(ScreenManager.SpriteBatch, gameTime);
+            The.Draw(ScreenManager.SpriteBatch, gameTime);
+            OliveGarden.Draw(ScreenManager.SpriteBatch, gameTime);
+            Experience.Draw(ScreenManager.SpriteBatch, gameTime);
         }
 
         /// <summary>
@@ -82,6 +110,7 @@ namespace TOGE
             if (input.CurrentKeyboardStates[0].IsKeyUp(Microsoft.Xna.Framework.Input.Keys.Space) && input.LastKeyboardStates[0].IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space))
             {
                 ScreenManager.AddScreen(new MenuScreen(), null);
+                this.ExitScreen();
             }
         }
     }
