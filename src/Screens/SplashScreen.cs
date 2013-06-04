@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace TOGE_ATFO
+namespace TOGE
 {
     /// <summary>
     /// This displays a sweet splashscreen

@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 #endregion
 
-namespace TOGE_ATFO
+namespace TOGE
 {
     /// <summary>
     /// This is the main type for your game
@@ -23,7 +23,7 @@ namespace TOGE_ATFO
         static readonly string[] preloadAssets =
         {
             "Calibri",
-            "Grissini",
+            "Logo",
         };
 
         public Gaem() : base()

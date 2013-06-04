@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace TOGE_ATFO
+namespace TOGE.ATFO
 {
     class Baord
     {

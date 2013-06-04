@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 #endregion
 
-namespace TOGE_ATFO
+namespace TOGE
 {
     /// <summary>
     /// This displays a crappy Menu
