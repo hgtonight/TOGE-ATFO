@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
 using System.Text;
 
-namespace TOGE_ATFO
+namespace TOGE.ATFO
 {
     class Tertimino
     {

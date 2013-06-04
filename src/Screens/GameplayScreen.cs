@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace TOGE_ATFO
+namespace TOGE
 {
     /// <summary>
     /// This screen implements the actual game logic
