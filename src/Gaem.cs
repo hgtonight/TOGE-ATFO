@@ -18,40 +18,36 @@ namespace TOGE_ATFO
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        ScreenManager screenManager;
-        ScreenFactory screenFactory;
-        Color NullColor;
-        SplashScreen Splash;
-        Menu Menu;
-        Tertis Tetris;
-        int State;
+        GameStateManagement.ScreenManager screenManager;
 
-        public Gaem()
-            : base()
+        static readonly string[] preloadAssets =
+        {
+            "Calibri",
+            "Grissini",
+        };
+
+        public Gaem() : base()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             
-            // lets me make a screen factory
-            screenFactory = new screenFactory();
-            Services.AddService(typeof(IScreenFactory), screenFactory);
-            
             // lets me make drawable components
-            screenManager = new screenManager(this);
+            screenManager = new GameStateManagement.ScreenManager(this);
             Components.Add(screenManager);
 
             // Run the initial screen
-            AddScreens();
+            screenManager.AddScreen(new SplashScreen(), null);
         }
 
-
-        private void AddScreens()
+        /// <summary>
+        /// Loads graphics content.
+        /// </summary>
+        protected override void LoadContent()
         {
-            // background screen for some cool effects
-            screenManager.AddScreen(new BackgroundScreen(), null);
-
-            // actual splash screen
-            screenManager.AddScreen(new SplashScreen(), null);
+            foreach (string asset in preloadAssets)
+            {
+                Content.Load<object>(asset);
+            }
         }
 
         /// <summary>
@@ -64,6 +60,19 @@ namespace TOGE_ATFO
 
             // The actual drawing will be done in the screen manager
             base.Draw(gameTime);
+        }
+    }
+
+    public static class Program
+    {
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            using (var game = new Gaem())
+                game.Run();
         }
     }
 }

@@ -1,11 +1,23 @@
-﻿using System;
-using System.IO;
-using Microsoft.Xna.Framework;
+#region File Description
+//-----------------------------------------------------------------------------
+// GameScreen.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
+#endregion
 
-namespace TOGE_ATFO
+#region Using Statements
+using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input.Touch;
+using System.IO;
+#endregion
+
+namespace GameStateManagement
 {
     /// <summary>
-    /// Enum describes the screen transition state
+    /// Enum describes the screen transition state.
     /// </summary>
     public enum ScreenState
     {
@@ -14,6 +26,7 @@ namespace TOGE_ATFO
         TransitionOff,
         Hidden,
     }
+
 
     /// <summary>
     /// A screen is a single layer that has update and draw logic, and which
@@ -24,6 +37,9 @@ namespace TOGE_ATFO
     /// </summary>
     public abstract class GameScreen
     {
+        #region Properties
+
+
         /// <summary>
         /// Normally when one screen is brought up over the top of another,
         /// the first screen will transition off to make room for the new
@@ -39,6 +55,7 @@ namespace TOGE_ATFO
 
         bool isPopup = false;
 
+
         /// <summary>
         /// Indicates how long the screen takes to
         /// transition on when it is activated.
@@ -51,6 +68,7 @@ namespace TOGE_ATFO
 
         TimeSpan transitionOnTime = TimeSpan.Zero;
 
+
         /// <summary>
         /// Indicates how long the screen takes to
         /// transition off when it is deactivated.
@@ -62,6 +80,7 @@ namespace TOGE_ATFO
         }
 
         TimeSpan transitionOffTime = TimeSpan.Zero;
+
 
         /// <summary>
         /// Gets the current position of the screen transition, ranging
@@ -76,6 +95,7 @@ namespace TOGE_ATFO
 
         float transitionPosition = 1;
 
+
         /// <summary>
         /// Gets the current alpha of the screen transition, ranging
         /// from 1 (fully active, no transition) to 0 (transitioned
@@ -85,6 +105,7 @@ namespace TOGE_ATFO
         {
             get { return 1f - TransitionPosition; }
         }
+
 
         /// <summary>
         /// Gets the current screen transition state.
@@ -96,6 +117,7 @@ namespace TOGE_ATFO
         }
 
         ScreenState screenState = ScreenState.TransitionOn;
+
 
         /// <summary>
         /// There are two possible reasons why a screen might be transitioning
@@ -113,6 +135,7 @@ namespace TOGE_ATFO
 
         bool isExiting = false;
 
+
         /// <summary>
         /// Checks whether this screen is active and can respond to user input.
         /// </summary>
@@ -128,6 +151,7 @@ namespace TOGE_ATFO
 
         bool otherScreenHasFocus;
 
+
         /// <summary>
         /// Gets the manager that this screen belongs to.
         /// </summary>
@@ -138,6 +162,7 @@ namespace TOGE_ATFO
         }
 
         ScreenManager screenManager;
+
 
         /// <summary>
         /// Gets the index of the player who is currently controlling this screen,
@@ -155,32 +180,63 @@ namespace TOGE_ATFO
 
         PlayerIndex? controllingPlayer;
 
-        /// <summary>
-        /// Activates the screen. Called when the screen is added to the screen manager or if the game resumes
-        /// from being paused or tombstoned.
-        /// </summary>
-        /// <param name="instancePreserved">
-        /// True if the game was preserved during deactivation, false if the screen is just being added or if the game was tombstoned.
-        /// On Xbox and Windows this will always be false.
-        /// </param>
-        public virtual void Activate(bool instancePreserved) { }
 
         /// <summary>
-        /// Deactivates the screen. Called when the game is being deactivated due to pausing or tombstoning.
+        /// Gets the gestures the screen is interested in. Screens should be as specific
+        /// as possible with gestures to increase the accuracy of the gesture engine.
+        /// For example, most menus only need Tap or perhaps Tap and VerticalDrag to operate.
+        /// These gestures are handled by the ScreenManager when screens change and
+        /// all gestures are placed in the InputState passed to the HandleInput method.
         /// </summary>
-        public virtual void Deactivate() { }
+        public GestureType EnabledGestures
+        {
+            get { return enabledGestures; }
+            protected set
+            {
+                enabledGestures = value;
+
+                // the screen manager handles this during screen changes, but
+                // if this screen is active and the gesture types are changing,
+                // we have to update the TouchPanel ourself.
+                if (ScreenState == ScreenState.Active)
+                {
+                    TouchPanel.EnabledGestures = value;
+                }
+            }
+        }
+
+        GestureType enabledGestures = GestureType.None;
+
+
+        #endregion
+
+        #region Initialization
+
 
         /// <summary>
-        /// Unload content for the screen. Called when the screen is removed from the screen manager.
+        /// Load graphics content for the screen.
         /// </summary>
-        public virtual void Unload() { }
+        public virtual void LoadContent() { }
+
+
+        /// <summary>
+        /// Unload content for the screen.
+        /// </summary>
+        public virtual void UnloadContent() { }
+
+
+        #endregion
+
+        #region Update and Draw
+
 
         /// <summary>
         /// Allows the screen to run logic, such as updating the transition position.
         /// Unlike HandleInput, this method is called regardless of whether the screen
         /// is active, hidden, or in the middle of a transition.
         /// </summary>
-        public virtual void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
+        public virtual void Update(GameTime gameTime, bool otherScreenHasFocus,
+                                                      bool coveredByOtherScreen)
         {
             this.otherScreenHasFocus = otherScreenHasFocus;
 
@@ -225,6 +281,7 @@ namespace TOGE_ATFO
             }
         }
 
+
         /// <summary>
         /// Helper for updating the screen transition position.
         /// </summary>
@@ -236,7 +293,8 @@ namespace TOGE_ATFO
             if (time == TimeSpan.Zero)
                 transitionDelta = 1;
             else
-                transitionDelta = (float)(gameTime.ElapsedGameTime.TotalMilliseconds / time.TotalMilliseconds);
+                transitionDelta = (float)(gameTime.ElapsedGameTime.TotalMilliseconds /
+                                          time.TotalMilliseconds);
 
             // Update the transition position.
             transitionPosition += transitionDelta * direction;
@@ -253,17 +311,25 @@ namespace TOGE_ATFO
             return true;
         }
 
+
         /// <summary>
         /// Allows the screen to handle user input. Unlike Update, this method
         /// is only called when the screen is active, and not when some other
         /// screen has taken the focus.
         /// </summary>
-        public virtual void HandleInput(GameTime gameTime, InputState input) { }
+        public virtual void HandleInput(InputState input) { }
+
 
         /// <summary>
         /// This is called when the screen should draw itself.
         /// </summary>
         public virtual void Draw(GameTime gameTime) { }
+
+
+        #endregion
+
+        #region Public Methods
+
 
         /// <summary>
         /// Tells the screen to go away. Unlike ScreenManager.RemoveScreen, which
@@ -283,5 +349,8 @@ namespace TOGE_ATFO
                 isExiting = true;
             }
         }
+
+
+        #endregion
     }
 }
