@@ -83,7 +83,9 @@ namespace TOGE_ATFO
             bgColor.G = (byte)(Math.Max(0, Math.Cos(gameTime.TotalGameTime.TotalSeconds)) * 255);
             bgColor.B = (byte)(Math.Max(0, Math.Sin(gameTime.TotalGameTime.TotalSeconds + Math.PI)) * 255);
 
-         
+            grissini.X = (float)(120 + Math.Sin(gameTime.TotalGameTime.TotalSeconds) * 100);
+            grissini.Y = (float)(120 + Math.Cos(gameTime.TotalGameTime.TotalSeconds) * 100);
+            
             base.Update(gameTime);
         }
 
