@@ -9,78 +9,53 @@ namespace TOGE
 {
     /// <summary>
     /// An object that automatically calculates the proper position, alpha, and rotation
-    /// based on linear interpolation
+    /// based on linear interpolation between key frames
     /// </summary>
-    public class Animatable
+    public class KeyedAnimatable
     {
         const float FrameTime = 1f / 24f;
         protected SpriteBatch spriteBatch;
-        protected Vector2 StartPosition, EndPosition, CurrentPosition;
-        protected byte StartAlpha, EndAlpha, CurrentAlpha;
-        protected float StartRotation, EndRotation, CurrentRotation, StartScale, EndScale, CurrentScale, FrameTimer;
-        protected int AnimationLength, CurrentFrame;
-        protected bool Active;
+        protected float FrameTimer;
+        protected bool Animating;
+        protected int CurrentFrame;
+        protected Vector2 CurrentPosition;
+        protected byte CurrentAlpha;
+        protected float CurrentRotation, CurrentScale;
+        protected SortedList<int, Vector2> PositionKeys;
+        protected SortedList<int, byte> AlphaKeys;
+        protected SortedList<int, float> RotationKeys, ScaleKeys;
 
         /// <summary>
         /// Initializes to sensible defaults
         /// </summary>
         /// <param name="game">Passed to GameComponent</param>
-        public Animatable()
+        public KeyedAnimatable()
         {
             this.Reset();
         }
 
         /// <summary>
-        /// Set up position animatipm
+        /// Set a position animation key frame
         /// </summary>
-        /// <param name="start">Position the object should start it's animation</param>
-        /// <param name="end">Position the object should end it's animation</param>
-        public void SetPositionPoints(Vector2 start, Vector2 end) {
-            StartPosition = CurrentPosition = start;
-            EndPosition = end;
+        /// <param name="key">The frame number to set</param>
+        /// <param name="position">The position to be at key's frame</param>
+        public void AddPositionKey(int key, Vector2 position) {
+            PositionKeys[key] = position;
         }
 
-        /// <summary>
-        /// Set up rotation animation
-        /// </summary>
-        /// <param name="start">Rotation the object should start it's animation</param>
-        /// <param name="end">Rotation the object should end it's animation</param>
-        public void SetRotationPoints(float start, float end)
+        public void AddRotationKey(int key, float rotation)
         {
-            StartRotation = CurrentRotation = start;
-            EndRotation = end;
+            RotationKeys[key] = rotation;
         }
 
-        /// <summary>
-        /// Set up alpha animation
-        /// </summary>
-        /// <param name="start">Alpha the object should start it's animation</param>
-        /// <param name="end">Alpha the object should end it's animation</param>
-        public void SetAlphaPoints(byte start, byte end)
+        public void AddAlphaKey(int key, byte alpha)
         {
-            StartAlpha = CurrentAlpha = start;
-            EndAlpha = end;
+            AlphaKeys[key] = alpha;
         }
 
-        /// <summary>
-        /// Set up scale animation
-        /// </summary>
-        /// <param name="start">Scale the object should start it's animation</param>
-        /// <param name="end">Scale the object should end it's animation</param>
-        public void SetScalePoints(float start, float end)
+        public void SetScalePoints(int key, float scale)
         {
-            StartScale = CurrentScale = start;
-            EndScale = end;
-        }
-
-        /// <summary>
-        /// Set up the lenth of animation
-        /// </summary>
-        /// <param name="length">How many frames should animation last</param>
-        /// <param name="start">What frame should animation start</param>
-        public void SetAnimationLength(int length)
-        {
-            AnimationLength = length;
+            ScaleKeys[key] = scale;
         }
 
         /// <summary>
@@ -88,7 +63,7 @@ namespace TOGE
         /// </summary>
         public void Start()
         {
-            Active = true;
+            Animating = true;
         }
 
         /// <summary>
@@ -96,7 +71,7 @@ namespace TOGE
         /// </summary>
         public void Pause()
         {
-            Active = false;
+            Animating = false;
         }
 
         /// <summary>
@@ -104,13 +79,8 @@ namespace TOGE
         /// </summary>
         public void Restart()
         {
-            Active = false;
-            CurrentAlpha = StartAlpha;
-            CurrentPosition = StartPosition;
-            CurrentRotation = StartRotation;
-            CurrentScale = StartScale;
-            CurrentFrame = 0;
-            Active = true;
+            this.Stop();
+            this.Start();
         }
         
         /// <summary>
@@ -118,57 +88,47 @@ namespace TOGE
         /// </summary>
         public void Stop()
         {
-            this.Reset();
+            Animating = false;
+            CurrentFrame = 0;
         }
 
         private void Reset()
         {
-            StartPosition = EndPosition = CurrentPosition = new Vector2(0, 0);
-            StartAlpha = EndAlpha = CurrentAlpha = 255;
-            StartRotation = EndRotation = CurrentRotation = 0.0f;
-            AnimationLength = 1;
-            StartScale = EndScale = CurrentScale = 1.0f;
-            CurrentFrame = 1;
-            Active = false;
+            this.Stop();
+            PositionKeys.Clear();
+            AlphaKeys.Clear();
+            RotationKeys.Clear();
+            ScaleKeys.Clear();
         }
 
         /// <summary>
         /// Update the animation frame if necessary
         /// </summary>
-        public void Update(GameTime gameTime)
+        public void Update(int Frame)
         {
-            if (Active)
+            if (Animating)
             {
-                FrameTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                // Update the current variables with a linear interpolation using
+                // key frames to determine length
+                
+                // find the previous keyframe and the next key frame
+                KeyValuePair<int, Vector2> LastKeyFrame = PositionKeys.Last(pair => pair.Key < Frame);
+                KeyValuePair<int, Vector2> NextKeyFrame = PositionKeys.First(pair => pair.Key > Frame);
+                int AnimationLength = NextKeyFrame.Key - LastKeyFrame.Key;
 
-                if (FrameTimer <= 0)
-                {
-                    CurrentFrame++;
-                    FrameTimer = FrameTime;
-
-                    if (CurrentFrame < AnimationLength)
-                    {
-                        // Update the current variables with a linear interpolation using the 
-                        // current frame and the total length as the 
-                        float interp = (float)CurrentFrame / (float)AnimationLength;
-
-                        CurrentAlpha = (byte)(StartAlpha + ((float)(EndAlpha - StartAlpha) * interp));
-                        CurrentPosition = Vector2.Lerp(StartPosition, EndPosition, interp);
-                        CurrentRotation = StartRotation + ((EndRotation - StartRotation) * interp);
-                        CurrentScale = StartScale + ((EndScale - StartScale) * interp);
-                    }
-                    else
-                    {
-                        this.Restart();
-                    }
-                }
+                float interp = (float)CurrentFrame / (float)AnimationLength;
+                PositionKeys.Last(CurrentFrame <
+                CurrentAlpha = (byte)(StartAlpha + ((float)(EndAlpha - StartAlpha) * interp));
+                CurrentPosition = Vector2.Lerp(StartPosition, EndPosition, interp);
+                CurrentRotation = StartRotation + ((EndRotation - StartRotation) * interp);
+                CurrentScale = StartScale + ((EndScale - StartScale) * interp);
             }
                 
         }
 
     }
 
-    public class AnimatableTexture2D : Animatable
+    public class AnimatableTexture2D : KeyedAnimatable
     {
         public Texture2D Texture;
 
@@ -182,7 +142,7 @@ namespace TOGE
         /// </summary>
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
-            if (Active)
+            if (Animating)
             {
                 spriteBatch.Begin();
                 spriteBatch.Draw(
@@ -201,7 +161,7 @@ namespace TOGE
         }
     }
 
-    public class AnimatableText : Animatable
+    public class AnimatableText : KeyedAnimatable
     {
         String Text;
         SpriteFont Font;
@@ -217,7 +177,7 @@ namespace TOGE
         /// </summary>
         public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
         {
-            if (Active)
+            if (Animating)
             {
                 spriteBatch.Begin();
                 spriteBatch.DrawString(

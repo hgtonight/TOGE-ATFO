@@ -77,6 +77,13 @@ namespace TOGE
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
             base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
+             FrameTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (FrameTimer <= 0)
+                {
+                    CurrentFrame++;
+                    FrameTimer = FrameTime;
+
             Logo.Update(gameTime);
             DaKlutz.Update(gameTime);
             Presents.Update(gameTime);
