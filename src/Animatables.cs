@@ -14,10 +14,12 @@ namespace TOGE
     public class KeyedAnimatable
     {
         protected SpriteBatch spriteBatch;
-        protected bool Animating;
+        protected bool? Animating;
+        protected bool PositionFinished, AlphaFinished, RotationFinished, ScaleFinished;
         protected Vector2 CurrentPosition;
         protected byte CurrentAlpha;
         protected float CurrentRotation, CurrentScale;
+        protected int AlphaIndex, RotationIndex, ScaleIndex, PositionIndex, StartFrame, EndFrame;
         protected SortedList<int, Vector2> PositionKeys;
         protected SortedList<int, byte> AlphaKeys;
         protected SortedList<int, float> RotationKeys, ScaleKeys;
@@ -32,7 +34,6 @@ namespace TOGE
             AlphaKeys = new SortedList<int,byte>();
             RotationKeys = new SortedList<int,float>();
             ScaleKeys = new SortedList<int,float>();
-
             this.Reset();
         }
 
@@ -42,68 +43,73 @@ namespace TOGE
         /// <param name="key">The frame number to set</param>
         /// <param name="position">The position to be at key's frame</param>
         public void AddPositionKey(int key, Vector2 position) {
-            PositionKeys[key] = position;
+            PositionKeys.Add(key, position);
         }
 
         public void AddRotationKey(int key, float rotation)
         {
-            RotationKeys[key] = rotation;
+            RotationKeys.Add(key, rotation);
         }
 
+        /// <summary>
+        /// Add an alpha key frame.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="alpha"></param>
         public void AddAlphaKey(int key, byte alpha)
         {
-            AlphaKeys[key] = alpha;
+            AlphaKeys.Add(key, alpha);
         }
 
+        /// <summary>
+        /// Add a scale key frame.
+        /// </summary>
+        /// <param name="key">The scale will be set to scale on this frame.</param>
+        /// <param name="scale">The scale value.</param>
         public void AddScaleKey(int key, float scale)
         {
-            ScaleKeys[key] = scale;
+            ScaleKeys.Add(key, scale);
         }
 
         /// <summary>
-        /// Starts the update of the set animation
+        /// Set the automatic stop frame for all animation.
         /// </summary>
-        public void Start()
+        /// <param name="key">The frame all animation will stop on.</param>
+        public void StopPoint(int key)
         {
-            Animating = true;
+            EndFrame = key;
         }
 
         /// <summary>
-        /// Pauses the animation
+        /// Set the automatice start frame for all animation.
         /// </summary>
-        public void Pause()
+        /// <param name="key">The frame all animation will start on.</param>
+        public void StartPoint(int key)
         {
-            Animating = false;
+            StartFrame = key;
         }
 
         /// <summary>
-        /// Restarts the current animation from the beginning
+        /// Convenience method used to reset all values to default
         /// </summary>
-        public void Restart()
-        {
-            this.Stop();
-            this.Start();
-        }
-        
-        /// <summary>
-        /// Ends the current animations immediately and resets it
-        /// </summary>
-        public void Stop()
-        {
-            Animating = false;
-        }
-
         private void Reset()
         {
-            this.Stop();
+            CurrentPosition = new Vector2(0, 0);
+            CurrentAlpha = 255;
+            CurrentRotation = 0.0f;
+            CurrentScale = 1.0f;
+            Animating = null;
+            StartFrame = 0;
+            EndFrame = 2147483647;            
+            PositionFinished = AlphaFinished = RotationFinished = ScaleFinished = false;
             PositionKeys.Clear();
-            PositionKeys.Add(0, new Vector2(0, 0));
+            PositionIndex = 0;
             AlphaKeys.Clear();
-            AlphaKeys.Add(0, 255);
+            AlphaIndex = 0;
             RotationKeys.Clear();
-            RotationKeys.Add(0, 0.0f);
+            RotationIndex = 0;
             ScaleKeys.Clear();
-            ScaleKeys.Add(0, 1.0f);
+            ScaleIndex = 0;
         }
 
         /// <summary>
@@ -111,36 +117,159 @@ namespace TOGE
         /// </summary>
         public void Update(int Frame)
         {
-            if (Animating)
+            // This holds the offset frame for ease of adding keyframes
+            int AnimationFrame = Frame - StartFrame;
+
+            if(Frame >= StartFrame && Frame <= EndFrame) {
+                Animating = true;
+            }
+            else {
+                Animating = false;
+            }
+
+            if (Animating == true)
             {
-                // Update the current variables with a linear interpolation using key frames
-                int AnimationLength = 1;
-                float interp = 0.0f;
+                int AnimationLength;
+                float interp;
 
-                // Position
-                KeyValuePair<int, Vector2> LastKeyFrameP = PositionKeys.Last(pair => pair.Key < Frame);
-                KeyValuePair<int, Vector2> NextKeyFrameP = PositionKeys.First(pair => pair.Key > Frame);
-                AnimationLength = NextKeyFrameP.Key - LastKeyFrameP.Key;
-                interp = (Frame - LastKeyFrameP.Key) / AnimationLength;
-                CurrentPosition = Vector2.Lerp(LastKeyFrameP.Value, NextKeyFrameP.Value, interp);
+                // TODO: DRY this shit up
 
-                KeyValuePair<int, byte> LastKeyFrameA = AlphaKeys.Last(pair => pair.Key < Frame);
-                KeyValuePair<int, byte> NextKeyFrameA = AlphaKeys.First(pair => pair.Key > Frame);
-                AnimationLength = NextKeyFrameA.Key - LastKeyFrameA.Key;
-                interp = (Frame - LastKeyFrameA.Key) / AnimationLength;
-                CurrentAlpha = (byte)(LastKeyFrameA.Value + ((float)(NextKeyFrameA.Value - LastKeyFrameA.Value) * interp));
+                // Only update the position if it won't put us out of bounds
+                if (PositionKeys.Count() != 0
+                    && PositionIndex + 1 != PositionKeys.Count()
+                    && PositionFinished == false)
+                {
+                    // Calculate the difference from the current index to the next index in terms of frames
+                    AnimationLength = PositionKeys.Keys[PositionIndex + 1] - PositionKeys.Keys[PositionIndex];
+                       
+                    // We can't divide by 0 so just set the interp to 0
+                    if (AnimationLength < 1)
+                    {
+                        interp = 0.0f;
+                    }
+                    else
+                    {
+                        interp = ((float)AnimationFrame - (float)PositionKeys.Keys[PositionIndex]) / (float)AnimationLength;
+                    }
 
-                KeyValuePair<int, float> LastKeyFrameR = RotationKeys.Last(pair => pair.Key < Frame);
-                KeyValuePair<int, float> NextKeyFrameR = RotationKeys.First(pair => pair.Key > Frame);
-                AnimationLength = NextKeyFrameR.Key - LastKeyFrameR.Key;
-                interp = (Frame - LastKeyFrameR.Key) / AnimationLength;
-                CurrentRotation = LastKeyFrameR.Value + ((NextKeyFrameR.Value - LastKeyFrameR.Value) * interp);
+                    // Interpolate by using the last key frame value and next as end points
+                    // Linear interpolation is the easiest                       
+                    // TODO: Implement easing functions
+                    CurrentPosition = Vector2.Lerp(PositionKeys.Values[PositionIndex], PositionKeys.Values[PositionIndex + 1], interp);
 
-                KeyValuePair<int, float> LastKeyFrameS = ScaleKeys.Last(pair => pair.Key < Frame);
-                KeyValuePair<int, float> NextKeyFrameS = ScaleKeys.First(pair => pair.Key > Frame);
-                AnimationLength = NextKeyFrameS.Key - LastKeyFrameS.Key;
-                interp = (Frame - LastKeyFrameS.Key) / AnimationLength;
-                CurrentScale = LastKeyFrameS.Value + ((NextKeyFrameS.Value - LastKeyFrameS.Value) * interp);
+                    if (AnimationFrame > PositionKeys.Keys[PositionIndex + 1])
+                    {
+                        PositionIndex++;
+                    }
+                }
+                else
+                {
+                    PositionFinished = true;
+                }
+
+                // TODO: DRY this shit up
+
+                // Only update the alpha if it won't put us out of bounds
+                if (AlphaKeys.Count() != 0
+                    && AlphaIndex + 1 != AlphaKeys.Count()
+                    && AlphaFinished == false)
+                {
+                    // Calculate the difference from the current index to the next index in terms of frames
+                    AnimationLength = AlphaKeys.Keys[AlphaIndex + 1] - AlphaKeys.Keys[AlphaIndex];
+
+                    // We can't divide by 0 so just set the interp to 0
+                    if (AnimationLength < 1)
+                    {
+                        interp = 0.0f;
+                    }
+                    else
+                    {
+                        interp = ((float)AnimationFrame - (float)AlphaKeys.Keys[AlphaIndex]) / (float)AnimationLength;
+                    }
+
+                    // Interpolate by using the last key frame value and next as end points
+                    // Linear interpolation is the easiest                       
+                    // TODO: Implement easing functions
+                    CurrentAlpha = (byte)(AlphaKeys.Values[AlphaIndex] + ((float)(AlphaKeys.Values[AlphaIndex + 1] - AlphaKeys.Values[AlphaIndex]) * interp));
+
+                    if (AnimationFrame > AlphaKeys.Keys[AlphaIndex + 1])
+                    {
+                        AlphaIndex++;
+                    }
+                }
+                else
+                {
+                    AlphaFinished = true;
+                }
+
+                // TODO: DRY this shit up
+
+                // Only update the rotation if it won't put us out of bounds
+                if (RotationKeys.Count() != 0
+                    && RotationIndex + 1 != RotationKeys.Count()
+                    && RotationFinished == false)
+                {
+                    // Calculate the difference from the current index to the next index in terms of frames
+                    AnimationLength = RotationKeys.Keys[RotationIndex + 1] - RotationKeys.Keys[RotationIndex];
+
+                    // We can't divide by 0 so just set the interp to 0
+                    if (AnimationLength < 1)
+                    {
+                        interp = 0.0f;
+                    }
+                    else
+                    {
+                        interp = ((float)AnimationFrame - (float)RotationKeys.Keys[RotationIndex]) / (float)AnimationLength;
+                    }
+
+                    // Interpolate by using the last key frame value and next as end points
+                    // Linear interpolation is the easiest                       
+                    // TODO: Implement easing functions
+                    CurrentRotation = RotationKeys.Values[RotationIndex] + ((RotationKeys.Values[RotationIndex + 1] - RotationKeys.Values[RotationIndex]) * interp);
+                    if (AnimationFrame > RotationKeys.Keys[RotationIndex + 1])
+                    {
+                        RotationIndex++;
+                    }
+                }
+                else
+                {
+                    RotationFinished = true;
+                }
+
+                // TODO: DRY this shit up
+
+                // Only update the scale if it won't put us out of bounds
+                if (ScaleKeys.Count() != 0
+                    && ScaleIndex + 1 != ScaleKeys.Count()
+                    && ScaleFinished == false)
+                {
+                    // Calculate the difference from the current index to the next index in terms of frames
+                    AnimationLength = ScaleKeys.Keys[ScaleIndex + 1] - ScaleKeys.Keys[ScaleIndex];
+
+                    // We can't divide by 0 so just set the interp to 0
+                    if (AnimationLength < 1)
+                    {
+                        interp = 0.0f;
+                    }
+                    else
+                    {
+                        interp = ((float)AnimationFrame - (float)ScaleKeys.Keys[ScaleIndex]) / (float)AnimationLength;
+                    }
+
+                    // Interpolate by using the last key frame value and next as end points
+                    // Linear interpolation is the easiest                       
+                    // TODO: Implement easing functions
+                    CurrentScale = ScaleKeys.Values[ScaleIndex] + ((ScaleKeys.Values[ScaleIndex + 1] - ScaleKeys.Values[ScaleIndex]) * interp);
+                    if (AnimationFrame > ScaleKeys.Keys[ScaleIndex + 1])
+                    {
+                        ScaleIndex++;
+                    }
+                }
+                else
+                {
+                    ScaleFinished = true;
+                }
+
             }
                 
         }
@@ -151,7 +280,7 @@ namespace TOGE
     {
         public Texture2D Texture;
 
-        public AnimatableTexture2D(Texture2D texture)
+        public AnimatableTexture2D(Texture2D texture) : base()
         {
             Texture = texture;
         }
@@ -161,7 +290,7 @@ namespace TOGE
         /// </summary>
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (Animating)
+            if (Animating == true)
             {
                 spriteBatch.Begin();
                 spriteBatch.Draw(
@@ -185,7 +314,7 @@ namespace TOGE
         String Text;
         SpriteFont Font;
 
-        public AnimatableText(String text, SpriteFont font)
+        public AnimatableText(String text, SpriteFont font) : base()
         {
             Text = text;
             Font = font;
@@ -196,7 +325,7 @@ namespace TOGE
         /// </summary>
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (Animating)
+            if (Animating == true)
             {
                 spriteBatch.Begin();
                 spriteBatch.DrawString(

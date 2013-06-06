@@ -37,41 +37,58 @@ namespace TOGE
             CurrentFrame = 0;
                         
             DaKlutz = new AnimatableTexture2D(content.Load<Texture2D>("daklutz"));
+            DaKlutz.StartPoint(0);
+            DaKlutz.StopPoint(54);
             DaKlutz.AddAlphaKey(0, 0);
-            DaKlutz.AddAlphaKey(48, 255);
+            DaKlutz.AddAlphaKey(96, 255);
+            DaKlutz.AddAlphaKey(120, 0);
             DaKlutz.AddPositionKey(0, new Vector2(120, 180));
             DaKlutz.AddPositionKey(48, new Vector2(120, 170));
             DaKlutz.AddScaleKey(0, 0.99f);
             DaKlutz.AddScaleKey(48, 1.0f);
-                        
+            
             Presents = new AnimatableText("PRESENTS", ScreenManager.Font);
+            Presents.StartPoint(0);
+            Presents.StopPoint(54);
             Presents.AddPositionKey(12, new Vector2(-100, 400));
             Presents.AddPositionKey(48, new Vector2(300, 400));
             Presents.AddScaleKey(0, 2.0f);
+            Presents.AddAlphaKey(0, 0);
+            Presents.AddAlphaKey(11, 0);
             Presents.AddAlphaKey(12, 64);
             Presents.AddAlphaKey(48, 212);
+            
 
             OldeFont = content.Load<SpriteFont>("YeOldeFont");
             
             Logo = new AnimatableTexture2D(content.Load<Texture2D>("Logo"));
+            Logo.StartPoint(120);
+            Logo.StopPoint(226);
             Logo.AddAlphaKey(0, 0);
+            Logo.AddAlphaKey(48, 0);
             Logo.AddAlphaKey(96, 255);
             Logo.AddPositionKey(0, new Vector2(300, 150));
             Logo.AddPositionKey(96, new Vector2(320, 150));
+            
+            The = new AnimatableText("The", OldeFont);
+            The.StartPoint(96);
+            The.StopPoint(192);
+            The.AddPositionKey(48, new Vector2(300, -25));
+            The.AddPositionKey(96, new Vector2(300, 50));
 
-            //The = new AnimatableText("The", OldeFont);
-            //The.SetPositionPoints(new Vector2(300, -25), new Vector2(300, 50));
-            //The.SetAnimationLength(96);
+            OliveGarden = new AnimatableText("Olive Garden", OldeFont);
+            OliveGarden.StartPoint(96);
+            OliveGarden.StopPoint(192);
+            OliveGarden.AddPositionKey(48, new Vector2(0, 150));
+            OliveGarden.AddPositionKey(96, new Vector2(280, 150));
             
-            //OliveGarden = new AnimatableText("Olive Garden", OldeFont);
-            //OliveGarden.SetPositionPoints(new Vector2(0, 150), new Vector2(280, 150));
-            //OliveGarden.SetAnimationLength(96);
+            Experience = new AnimatableText("Experience", OldeFont);
+            Experience.StartPoint(96);
+            Experience.StopPoint(192);
+            Experience.AddPositionKey(48, new Vector2(600, 400));
+            Experience.AddPositionKey(96, new Vector2(300, 400));
             
-            //Experience = new AnimatableText("Experience", OldeFont);
-            //Experience.SetPositionPoints(new Vector2(600, 400), new Vector2(300, 400));
-            //Experience.SetAnimationLength(96);
-            
-            bgColor = Color.Gray;
+            bgColor = Color.White;
         }
 
         /// <summary>
@@ -100,9 +117,9 @@ namespace TOGE
             Logo.Update(CurrentFrame);
             DaKlutz.Update(CurrentFrame);
             Presents.Update(CurrentFrame);
-            //The.Update(CurrentFrame);
-            //OliveGarden.Update(CurrentFrame);
-            //Experience.Update(CurrentFrame);
+            The.Update(CurrentFrame);
+            OliveGarden.Update(CurrentFrame);
+            Experience.Update(CurrentFrame);
         }
 
         /// <summary>
@@ -119,10 +136,10 @@ namespace TOGE
             ScreenManager.SpriteBatch.Begin();
             ScreenManager.SpriteBatch.DrawString(OldeFont, CurrentFrame.ToString(), new Vector2(0, 0), Color.Black);
             ScreenManager.SpriteBatch.End();
-            
-            //The.Draw(ScreenManager.SpriteBatch);
-            //OliveGarden.Draw(ScreenManager.SpriteBatch);
-            //Experience.Draw(ScreenManager.SpriteBatch);
+
+            The.Draw(ScreenManager.SpriteBatch);
+            OliveGarden.Draw(ScreenManager.SpriteBatch);
+            Experience.Draw(ScreenManager.SpriteBatch);
         }
 
         /// <summary>
