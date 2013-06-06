@@ -13,11 +13,8 @@ namespace TOGE
     /// </summary>
     public class KeyedAnimatable
     {
-        const float FrameTime = 1f / 24f;
         protected SpriteBatch spriteBatch;
-        protected float FrameTimer;
         protected bool Animating;
-        protected int CurrentFrame;
         protected Vector2 CurrentPosition;
         protected byte CurrentAlpha;
         protected float CurrentRotation, CurrentScale;
@@ -31,6 +28,11 @@ namespace TOGE
         /// <param name="game">Passed to GameComponent</param>
         public KeyedAnimatable()
         {
+            PositionKeys = new SortedList<int,Vector2>();
+            AlphaKeys = new SortedList<int,byte>();
+            RotationKeys = new SortedList<int,float>();
+            ScaleKeys = new SortedList<int,float>();
+
             this.Reset();
         }
 
@@ -53,7 +55,7 @@ namespace TOGE
             AlphaKeys[key] = alpha;
         }
 
-        public void SetScalePoints(int key, float scale)
+        public void AddScaleKey(int key, float scale)
         {
             ScaleKeys[key] = scale;
         }
@@ -89,16 +91,19 @@ namespace TOGE
         public void Stop()
         {
             Animating = false;
-            CurrentFrame = 0;
         }
 
         private void Reset()
         {
             this.Stop();
             PositionKeys.Clear();
+            PositionKeys.Add(0, new Vector2(0, 0));
             AlphaKeys.Clear();
+            AlphaKeys.Add(0, 255);
             RotationKeys.Clear();
+            RotationKeys.Add(0, 0.0f);
             ScaleKeys.Clear();
+            ScaleKeys.Add(0, 1.0f);
         }
 
         /// <summary>
@@ -108,20 +113,34 @@ namespace TOGE
         {
             if (Animating)
             {
-                // Update the current variables with a linear interpolation using
-                // key frames to determine length
-                
-                // find the previous keyframe and the next key frame
-                KeyValuePair<int, Vector2> LastKeyFrame = PositionKeys.Last(pair => pair.Key < Frame);
-                KeyValuePair<int, Vector2> NextKeyFrame = PositionKeys.First(pair => pair.Key > Frame);
-                int AnimationLength = NextKeyFrame.Key - LastKeyFrame.Key;
+                // Update the current variables with a linear interpolation using key frames
+                int AnimationLength = 1;
+                float interp = 0.0f;
 
-                float interp = (float)CurrentFrame / (float)AnimationLength;
-                PositionKeys.Last(CurrentFrame <
-                CurrentAlpha = (byte)(StartAlpha + ((float)(EndAlpha - StartAlpha) * interp));
-                CurrentPosition = Vector2.Lerp(StartPosition, EndPosition, interp);
-                CurrentRotation = StartRotation + ((EndRotation - StartRotation) * interp);
-                CurrentScale = StartScale + ((EndScale - StartScale) * interp);
+                // Position
+                KeyValuePair<int, Vector2> LastKeyFrameP = PositionKeys.Last(pair => pair.Key < Frame);
+                KeyValuePair<int, Vector2> NextKeyFrameP = PositionKeys.First(pair => pair.Key > Frame);
+                AnimationLength = NextKeyFrameP.Key - LastKeyFrameP.Key;
+                interp = (Frame - LastKeyFrameP.Key) / AnimationLength;
+                CurrentPosition = Vector2.Lerp(LastKeyFrameP.Value, NextKeyFrameP.Value, interp);
+
+                KeyValuePair<int, byte> LastKeyFrameA = AlphaKeys.Last(pair => pair.Key < Frame);
+                KeyValuePair<int, byte> NextKeyFrameA = AlphaKeys.First(pair => pair.Key > Frame);
+                AnimationLength = NextKeyFrameA.Key - LastKeyFrameA.Key;
+                interp = (Frame - LastKeyFrameA.Key) / AnimationLength;
+                CurrentAlpha = (byte)(LastKeyFrameA.Value + ((float)(NextKeyFrameA.Value - LastKeyFrameA.Value) * interp));
+
+                KeyValuePair<int, float> LastKeyFrameR = RotationKeys.Last(pair => pair.Key < Frame);
+                KeyValuePair<int, float> NextKeyFrameR = RotationKeys.First(pair => pair.Key > Frame);
+                AnimationLength = NextKeyFrameR.Key - LastKeyFrameR.Key;
+                interp = (Frame - LastKeyFrameR.Key) / AnimationLength;
+                CurrentRotation = LastKeyFrameR.Value + ((NextKeyFrameR.Value - LastKeyFrameR.Value) * interp);
+
+                KeyValuePair<int, float> LastKeyFrameS = ScaleKeys.Last(pair => pair.Key < Frame);
+                KeyValuePair<int, float> NextKeyFrameS = ScaleKeys.First(pair => pair.Key > Frame);
+                AnimationLength = NextKeyFrameS.Key - LastKeyFrameS.Key;
+                interp = (Frame - LastKeyFrameS.Key) / AnimationLength;
+                CurrentScale = LastKeyFrameS.Value + ((NextKeyFrameS.Value - LastKeyFrameS.Value) * interp);
             }
                 
         }
@@ -140,7 +159,7 @@ namespace TOGE
         /// <summary>
         /// Draw the current frame of animation
         /// </summary>
-        public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+        public void Draw(SpriteBatch spriteBatch)
         {
             if (Animating)
             {
@@ -175,7 +194,7 @@ namespace TOGE
         /// <summary>
         /// Draw the current frame of animation
         /// </summary>
-        public void Draw(SpriteBatch spriteBatch, GameTime gameTime)
+        public void Draw(SpriteBatch spriteBatch)
         {
             if (Animating)
             {

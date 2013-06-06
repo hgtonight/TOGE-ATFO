@@ -15,6 +15,9 @@ namespace TOGE
         AnimatableText Presents, The, OliveGarden, Experience;
         SpriteFont OldeFont;
         Color bgColor;
+        const float FrameTime = 1f / 24f;
+        float FrameTimer;
+        int CurrentFrame;
         
         public SplashScreen()
         {
@@ -30,36 +33,44 @@ namespace TOGE
             if (content == null) {
                 content = new ContentManager(ScreenManager.Game.Services, "Content");
             }
-            Logo = new AnimatableTexture2D(content.Load<Texture2D>("Logo"));
-            Logo.SetAlphaPoints(0, 255);
-            Logo.SetPositionPoints(new Vector2(300, 150), new Vector2(320, 150));
-            Logo.SetAnimationLength(96);
-            Logo.Start();
+            FrameTimer = 0.0f;
+            CurrentFrame = 0;
+                        
             DaKlutz = new AnimatableTexture2D(content.Load<Texture2D>("daklutz"));
-            DaKlutz.SetAlphaPoints(0, 255);
-            DaKlutz.SetPositionPoints(new Vector2(120, 180), new Vector2(120, 170));
-            DaKlutz.SetScalePoints(0.99f, 1.0f);
-            DaKlutz.SetAnimationLength(48);
-            //DaKlutz.Start();
+            DaKlutz.AddAlphaKey(0, 0);
+            DaKlutz.AddAlphaKey(48, 255);
+            DaKlutz.AddPositionKey(0, new Vector2(120, 180));
+            DaKlutz.AddPositionKey(48, new Vector2(120, 170));
+            DaKlutz.AddScaleKey(0, 0.99f);
+            DaKlutz.AddScaleKey(48, 1.0f);
+                        
             Presents = new AnimatableText("PRESENTS", ScreenManager.Font);
-            Presents.SetPositionPoints(new Vector2(-100, 400), new Vector2(300, 400));
-            Presents.SetScalePoints(2.0f, 2.0f);
-            Presents.SetAlphaPoints(64, 212);
-            Presents.SetAnimationLength(48);
-            //Presents.Start();
+            Presents.AddPositionKey(12, new Vector2(-100, 400));
+            Presents.AddPositionKey(48, new Vector2(300, 400));
+            Presents.AddScaleKey(0, 2.0f);
+            Presents.AddAlphaKey(12, 64);
+            Presents.AddAlphaKey(48, 212);
+
             OldeFont = content.Load<SpriteFont>("YeOldeFont");
-            The = new AnimatableText("The", OldeFont);
-            The.SetPositionPoints(new Vector2(300, -25), new Vector2(300, 50));
-            The.SetAnimationLength(96);
-            The.Start();
-            OliveGarden = new AnimatableText("Olive Garden", OldeFont);
-            OliveGarden.SetPositionPoints(new Vector2(0, 150), new Vector2(280, 150));
-            OliveGarden.SetAnimationLength(96);
-            OliveGarden.Start();
-            Experience = new AnimatableText("Experience", OldeFont);
-            Experience.SetPositionPoints(new Vector2(600, 400), new Vector2(300, 400));
-            Experience.SetAnimationLength(96);
-            Experience.Start();
+            
+            Logo = new AnimatableTexture2D(content.Load<Texture2D>("Logo"));
+            Logo.AddAlphaKey(0, 0);
+            Logo.AddAlphaKey(96, 255);
+            Logo.AddPositionKey(0, new Vector2(300, 150));
+            Logo.AddPositionKey(96, new Vector2(320, 150));
+
+            //The = new AnimatableText("The", OldeFont);
+            //The.SetPositionPoints(new Vector2(300, -25), new Vector2(300, 50));
+            //The.SetAnimationLength(96);
+            
+            //OliveGarden = new AnimatableText("Olive Garden", OldeFont);
+            //OliveGarden.SetPositionPoints(new Vector2(0, 150), new Vector2(280, 150));
+            //OliveGarden.SetAnimationLength(96);
+            
+            //Experience = new AnimatableText("Experience", OldeFont);
+            //Experience.SetPositionPoints(new Vector2(600, 400), new Vector2(300, 400));
+            //Experience.SetAnimationLength(96);
+            
             bgColor = Color.Gray;
         }
 
@@ -77,19 +88,21 @@ namespace TOGE
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
             base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
-             FrameTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
+            FrameTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                if (FrameTimer <= 0)
-                {
-                    CurrentFrame++;
-                    FrameTimer = FrameTime;
+            if (FrameTimer <= 0)
+            {
+                CurrentFrame++;
+                FrameTimer = FrameTime;
+            }
 
-            Logo.Update(gameTime);
-            DaKlutz.Update(gameTime);
-            Presents.Update(gameTime);
-            The.Update(gameTime);
-            OliveGarden.Update(gameTime);
-            Experience.Update(gameTime);
+            Logo.Update(CurrentFrame);
+            DaKlutz.Update(CurrentFrame);
+            Presents.Update(CurrentFrame);
+            //The.Update(CurrentFrame);
+            //OliveGarden.Update(CurrentFrame);
+            //Experience.Update(CurrentFrame);
         }
 
         /// <summary>
@@ -99,12 +112,17 @@ namespace TOGE
         public override void Draw(GameTime gameTime)
         {
             ScreenManager.GraphicsDevice.Clear(bgColor);
-            Logo.Draw(ScreenManager.SpriteBatch, gameTime);
-            DaKlutz.Draw(ScreenManager.SpriteBatch, gameTime);
-            Presents.Draw(ScreenManager.SpriteBatch, gameTime);
-            The.Draw(ScreenManager.SpriteBatch, gameTime);
-            OliveGarden.Draw(ScreenManager.SpriteBatch, gameTime);
-            Experience.Draw(ScreenManager.SpriteBatch, gameTime);
+            Logo.Draw(ScreenManager.SpriteBatch);
+            DaKlutz.Draw(ScreenManager.SpriteBatch);
+            Presents.Draw(ScreenManager.SpriteBatch);
+
+            ScreenManager.SpriteBatch.Begin();
+            ScreenManager.SpriteBatch.DrawString(OldeFont, CurrentFrame.ToString(), new Vector2(0, 0), Color.Black);
+            ScreenManager.SpriteBatch.End();
+            
+            //The.Draw(ScreenManager.SpriteBatch);
+            //OliveGarden.Draw(ScreenManager.SpriteBatch);
+            //Experience.Draw(ScreenManager.SpriteBatch);
         }
 
         /// <summary>
